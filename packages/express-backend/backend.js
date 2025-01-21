@@ -1,8 +1,10 @@
 import express from "express";
+import cors from "cors";
 
 const app = express();
 const port = 8000;
 
+app.use(cors()); 
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -111,3 +113,28 @@ app.delete("/users/:id", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+
+app.get("/users/:id", (req, res) => {
+  const id = req.params.id;
+
+  const findUser = new Promise((resolve, reject) => {
+    const user = findUserById(id); 
+    if (user === undefined) {
+      reject("User Undefined");
+    } else {
+      resolve(user);
+    }
+  });
+
+  findUser
+    .then((result) => {
+      if (result.length === 0) {
+        throw new Error("Not Found");
+      } else {
+        res.status(200).send(result);
+      }
+    })
+    .catch((error) => res.status(400).send(error));
+});
+
