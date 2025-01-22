@@ -13,12 +13,13 @@ function TableHeader() {
 }
 
 function TableBody(props) {
-  const rows = props.characterData.map((row, index) => (
-    <tr key={index}>
+  const rows = props.characterData.map((row) => (
+    <tr key={row.id}>
+      <td>{row.id}</td>
       <td>{row.name}</td>
       <td>{row.job}</td>
       <td>
-        <button onClick={() => props.removeCharacter(index)}>Delete</button>
+        <button onClick={() => props.removeCharacter(row.id)}>Delete</button>
       </td>
     </tr>
   ));

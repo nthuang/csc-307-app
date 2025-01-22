@@ -4,7 +4,7 @@ import cors from "cors";
 const app = express();
 const port = 8000;
 
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -47,7 +47,8 @@ const findUserByName = (name) => {
 
 const findUserByNameAndJob = (name, job) => {
   return users["users_list"].filter(
-    (user) => user["name"] === name && user["job"] === job);
+    (user) => user["name"] === name && user["job"] === job
+  );
 };
 
 app.get("/users", (req, res) => {
@@ -79,17 +80,21 @@ app.get("/users/:id", (req, res) => {
   }
 });
 
+const idGenerator = () => {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+};
+
 const addUser = (user) => {
+  user.id = idGenerator();
   users["users_list"].push(user);
   return user;
 };
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send();
+  const newUser = addUser(userToAdd);
+  res.status(201).send(newUser);
 });
-
 
 const deleteUserById = (id) => {
   const userIndex = users["users_list"].findIndex((user) => user["id"] === id);
@@ -102,39 +107,14 @@ const deleteUserById = (id) => {
 
 app.delete("/users/:id", (req, res) => {
   const id = req.params.id;
-  let delet = deleteUserById(id);
-  if (delet === undefined) {
-    res.status(404).send("Resource not found.");
+  let deleted = deleteUserById(id);
+  if (deleted) {
+    res.status(204).send();
   } else {
-    res.status(200).send(`User with id ${id} was deleted.`);
+    res.status(404).send("Resource not found.");
   }
 });
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
-
-
-app.get("/users/:id", (req, res) => {
-  const id = req.params.id;
-
-  const findUser = new Promise((resolve, reject) => {
-    const user = findUserById(id); 
-    if (user === undefined) {
-      reject("User Undefined");
-    } else {
-      resolve(user);
-    }
-  });
-
-  findUser
-    .then((result) => {
-      if (result.length === 0) {
-        throw new Error("Not Found");
-      } else {
-        res.status(200).send(result);
-      }
-    })
-    .catch((error) => res.status(400).send(error));
-});
-
