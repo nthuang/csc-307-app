@@ -1,17 +1,16 @@
 import express from "express";
 import cors from "cors";
 
+import userModel from "./user.js";
+import userServices from "./user-services.js";
+
 const app = express();
 const port = 8000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-const users = {
+/*const users = {
   users_list: [
     {
       id: "xyz789",
@@ -51,34 +50,8 @@ const findUserByNameAndJob = (name, job) => {
   );
 };
 
-app.get("/users", (req, res) => {
-  const name = req.query.name;
-  const job = req.query.job;
-  if (name != undefined && job != undefined) {
-    let result = findUserByNameAndJob(name, job);
-    result = { users_list: result };
-    res.send(result);
-  } else if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
-  }
-});
-
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
-
-app.get("/users/:id", (req, res) => {
-  const id = req.params.id;
-  let result = findUserById(id);
-  if (result === undefined) {
-    res.status(404).send("Resource not found.");
-  } else {
-    res.send(result);
-  }
-});
 
 const idGenerator = () => {
   return Math.floor(10000 + Math.random() * 90000).toString();
@@ -90,12 +63,6 @@ const addUser = (user) => {
   return user;
 };
 
-app.post("/users", (req, res) => {
-  const userToAdd = req.body;
-  const newUser = addUser(userToAdd);
-  res.status(201).send(newUser);
-});
-
 const deleteUserById = (id) => {
   const userIndex = users["users_list"].findIndex((user) => user["id"] === id);
   if (userIndex !== -1) {
@@ -104,14 +71,62 @@ const deleteUserById = (id) => {
   }
   return false;
 };
+*/
 
-app.delete("/users/:id", (req, res) => {
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.get("/users", async (req, res) => {
+  const name = req.query.name;
+  const job = req.query.job;
+  try {
+    const result = await userServices.getUsers(name, job);
+    res.send({ users_list: result });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error ocurred in the server.");
+  }
+});
+
+app.get("/users/:id", async (req, res) => {
   const id = req.params.id;
-  let deleted = deleteUserById(id);
-  if (deleted) {
-    res.status(204).send();
-  } else {
-    res.status(404).send("Resource not found.");
+  try {
+    const result = await userServices.findUserById(id);
+    if (result === undefined) {
+      res.status(404).send("Resource not found.");
+    } else {
+      res.send({ users_list: result });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error ocurred in the server.");
+  }
+});
+
+app.post("/users", async (req, res) => {
+  const userToAdd = req.body;
+  try {
+    const newUser = await userServices.addUser(userToAdd);
+    res.status(201).send(newUser);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error ocurred in the server.");
+  }
+});
+
+app.delete("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    let deleted = await userModel.findByIdAndDelete(id);
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).send("Resource not found.");
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error ocurred in the server.");
   }
 });
 

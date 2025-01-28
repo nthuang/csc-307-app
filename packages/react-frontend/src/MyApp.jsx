@@ -6,14 +6,14 @@ import Form from "./Form";
 function MyApp() {
   const [characters, setCharacters] = React.useState([]);
 
-  function removeOneCharacter(id) {
-    const promise = fetch(`http://localhost:8000/users/${id}`, {
+  function removeOneCharacter(_id) {
+    const promise = fetch(`http://localhost:8000/users/${_id}`, {
       method: "DELETE",
     })
       .then((res) => {
         if (res.status === 204) {
           setCharacters((prevCharacters) =>
-            prevCharacters.filter((character) => character.id !== id)
+            prevCharacters.filter((character) => character._id !== _id)
           );
         } else if (res.status === 404) {
           console.log("User not found");
